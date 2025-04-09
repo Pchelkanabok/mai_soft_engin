@@ -1,0 +1,6 @@
+{
+    "python.envFile": "${workspaceFolder}/.env",
+    "python.experiments.enabled": true,
+    "python.terminal.activateEnvInCurrentTerminal": true,
+    "python.REPL.enableREPLSmartSend": false
+}
