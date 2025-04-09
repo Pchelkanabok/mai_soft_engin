@@ -4,3 +4,6 @@
 /lab_1/structurizrdata/workspace.json
 /lab_1/structurizrdata/del.dsl
 notes.txt
+/.vscode
+/.venv
+.gitignore
