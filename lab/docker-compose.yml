@@ -40,6 +40,34 @@ services:
       retries: 5
     networks:
       - app-network
+  report_db:
+    image: mongo:latest
+    hostname: report_mongo
+    environment:
+      - MONGO_INITDB_DATABASE=report_db
+      - MONGO_INITDB_ROOT_USERNAME=practical-proj
+      - MONGO_INITDB_ROOT_PASSWORD=1
+    ports:
+      - 27017:27017
+    networks:
+      - app-network
+  conf_db:
+    image: mongo:latest
+    hostname: conf_mongo
+    environment:
+      - MONGO_INITDB_DATABASE=conf_db
+      - MONGO_INITDB_ROOT_USERNAME=practical-proj
+      - MONGO_INITDB_ROOT_PASSWORD=1
+    ports:
+      - 27018:27017
+    networks:
+      - app-network 
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
 
   auth_service:
     build: ./auth_service
@@ -55,7 +83,6 @@ services:
         condition: service_healthy
     networks:
       - app-network
-
   user_service:
     build: ./user_service
     ports:
@@ -70,6 +97,41 @@ services:
         condition: service_healthy
     networks:
       - app-network
+  report_service:
+    build: ./report_service
+    ports:
+      - "8003:8003"
+    environment:
+      - AUTH_SERVICE_URL=http://auth_service:8000
+      - DATABASE_URL=mongodb://practical-proj:1@report_mongo:27017/?authSource=admin
+    depends_on: 
+      auth_service:
+        condition: service_started
+    networks:
+      - app-network
+  conf_service:
+    build: ./conf_service
+    ports:
+      - "8002:8002"
+    environment:
+      - AUTH_SERVICE_URL=http://auth_service:8000
+      - REPORT_URL=http://report_service:8003
+      - USER_SERVICE_URL=http://user_service:8001
+      - DATABASE_URL=mongodb://practical-proj:1@conf_mongo:27017/conf_db?authSource=admin
+    depends_on: 
+      auth_service:
+        condition: service_started
+      report_service:
+        condition: service_started
+      user_service:
+        condition: service_started
+      redis:
+        condition: service_started
+    networks:
+      - app-network
+    links:
+      - conf_db
+
 volumes:
     auth_postgres_data:
     users_postgres_data:
